@@ -1,6 +1,7 @@
 <script>
   // core components
   import CardStats from "components/Cards/CardStats.svelte";
+  import { history } from "/home/herve/repo/youtube-dataviz/src/store/history.js";
 </script>
 
 <!-- Header -->
@@ -12,7 +13,7 @@
         <div class="w-full lg:w-6/12 xl:w-3/12 px-4">
           <CardStats
             statSubtitle="TRAFFIC"
-            statTitle="350,897"
+            statTitle="{$history.length}"
             statArrow="up"
             statPercent="3.48"
             statPercentColor="text-green-500"
