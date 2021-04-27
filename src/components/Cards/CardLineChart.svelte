@@ -1,4 +1,6 @@
 <script>
+  import { history } from "/home/herve/repo/youtube-dataviz/src/store/history.js";
+  import Year from "/home/herve/repo/youtube-dataviz/src/model/Year.js";
   import { onMount } from "svelte";
   // library that creates chart objects in page
   import Chart from "chart.js";
@@ -16,23 +18,13 @@
           "May",
           "June",
           "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December"
         ],
-        datasets: [
-          {
-            label: new Date().getFullYear(),
-            backgroundColor: "#4c51bf",
-            borderColor: "#4c51bf",
-            data: [65, 78, 66, 44, 56, 67, 75],
-            fill: false
-          },
-          {
-            label: new Date().getFullYear() - 1,
-            fill: false,
-            backgroundColor: "#fff",
-            borderColor: "#fff",
-            data: [40, 68, 86, 74, 56, 60, 87]
-          }
-        ]
+        datasets: getDataSets()
       },
       options: {
         maintainAspectRatio: false,
@@ -108,6 +100,89 @@
     var ctx = document.getElementById("line-chart").getContext("2d");
     window.myLine = new Chart(ctx, config);
   });
+
+  function count(array_elements) {
+    var map = new Map();
+    array_elements.sort();
+
+    var current = null;
+    var cnt = 0;
+    for (var i = 0; i < array_elements.length; i++) {
+        if (array_elements[i] != current) {
+            if (cnt > 0) {
+                map.set(current, cnt);
+            }
+            current = array_elements[i];
+            cnt = 1;
+        } else {
+            cnt++;
+        }
+    }
+    if (cnt > 0) {
+        // console.log(current + ' comes --> ' + cnt + ' times');
+    }
+    return map;
+  }
+
+  function getUnique(items) {
+    let uniqueItems = [];
+    items.forEach((el) => {
+      if (uniqueItems.indexOf(el) == -1) {
+        uniqueItems.push(el);
+      }
+    })
+    return uniqueItems;
+  }
+
+  function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  function getMonthsData(year, yearsMonthsMap) {
+    let months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    months.forEach((m, i) => {
+      for (let [key, value] of yearsMonthsMap) {
+        if (key.substring(0, 4) == year) {
+          if (i + 1 == parseInt(key.substring(5, 7))) {
+            months[i] = months[i] + value;
+          }
+        }
+      }
+    })
+    return months;
+  }
+
+  function getDataSets() {
+    let months = $history.map(h => {
+      if (h && h.time) {
+        return h.time.substring(0, 7);
+      }
+    });
+    
+    let yearsMonthsMap = count(months);
+
+    let years = [];
+    for (let [key, value] of yearsMonthsMap) {
+      years.push(key.substring(0, 4));
+    }
+
+    years = getUnique(years);
+
+    let datasets = years.map(y => {
+      return new Year(
+        y,
+        getRandomColor(),
+        getMonthsData(y, yearsMonthsMap)
+      )
+    })
+    return datasets;
+  }
 </script>
 
 <div
